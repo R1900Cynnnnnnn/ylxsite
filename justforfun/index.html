@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Just For Fun · 角落</title>
+<meta name="description" content="一些随手做的小游戏和有趣的小东西" />
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<style>
+  :root{
+    --bg:#0b0b12; --panel:#15151f; --line:#22222f; --line2:#26263a;
+    --text:#e7e7ee; --muted:#8a8a9e; --soft:#cfcfe0; --accent:#2dd4bf;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:880px;margin:0 auto;padding:0 24px}
+
+  /* header（与主站一致） */
+  header{
+    position:sticky;top:0;z-index:20;
+    backdrop-filter:blur(14px);background:rgba(11,11,18,.6);
+    border-bottom:1px solid var(--line);
+  }
+  header .wrap{height:60px;display:flex;align-items:center;justify-content:space-between}
+  .brand{font-weight:600;letter-spacing:.2px;color:var(--text)}
+  .brand:hover{text-decoration:none;color:var(--accent)}
+  nav{display:flex;align-items:center;gap:22px;font-size:14px}
+  nav a{color:var(--muted)}
+  nav a:hover{color:var(--text);text-decoration:none}
+  .langbtn{
+    border:1px solid var(--line2);background:transparent;color:var(--soft);
+    border-radius:8px;padding:5px 11px;font-size:13px;cursor:pointer;font-family:inherit;
+    transition:.2s;
+  }
+  .langbtn:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* hero */
+  .hero{padding:64px 0 40px}
+  .hero h1{font-size:clamp(2rem,5vw,3rem);line-height:1.1;margin:0 0 14px;font-weight:700;letter-spacing:-.5px}
+  .hero h1 .dot{color:var(--accent)}
+  .hero p{color:var(--soft);max-width:52ch;margin:0}
+
+  /* game cards */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:8px 0 56px}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}}
+  .gcard{
+    position:relative;display:flex;flex-direction:column;gap:8px;
+    padding:22px;border-radius:16px;min-height:150px;
+    background:var(--panel);border:1px solid var(--line2);
+    transition:.2s;overflow:hidden;
+  }
+  a.gcard:hover{border-color:var(--accent);text-decoration:none;transform:translateY(-2px)}
+  .gcard .icon{
+    width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:22px;background:#1d1d2b;border:1px solid var(--line2);
+  }
+  .gcard .title{font-weight:600;font-size:1.06rem;color:var(--text)}
+  .gcard .desc{font-size:14px;color:var(--soft);line-height:1.6}
+  .gcard .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+  .gcard .tag{font-size:12px;color:var(--muted);background:#1d1d2b;border:1px solid var(--line2);border-radius:999px;padding:2px 10px}
+  .gcard .play{
+    position:absolute;right:18px;top:18px;font-size:12.5px;color:var(--accent);
+    border:1px solid var(--line2);border-radius:999px;padding:3px 12px;transition:.2s;
+  }
+  a.gcard:hover .play{border-color:var(--accent)}
+  .gcard.soon{opacity:.55;border-style:dashed}
+  .gcard.soon .play{color:var(--muted)}
+
+  footer{padding:40px 0 56px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  .reveal{opacity:0;transform:translateY(14px);transition:.6s ease}
+  .reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="brand" href="../">← <span id="brandText">个人主页</span></a>
+      <nav>
+        <button class="langbtn" id="langBtn">EN</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1 class="reveal">Just For Fun<span class="dot">.</span></h1>
+      <p class="reveal" id="heroDesc"></p>
+    </section>
+    <div class="grid" id="game-list"></div>
+  </main>
+
+  <footer>
+    <div class="wrap" id="footText"></div>
+  </footer>
+
+<script>
+/* ============================================================
+   游戏清单 —— 以后加新的小游戏/小玩意，只需在 GAMES 里加一项
+   href 为相对 justforfun/ 的路径
+   ============================================================ */
+const GAMES = [
+  {
+    icon: '🧊',
+    title: { zh: '软体俄罗斯方块', en: 'Jelly Tetris' },
+    desc:  { zh: '果冻般 Q 弹的俄罗斯方块：弹簧软体物理、马卡龙配色、消行纸屑特效。键盘 ←→ 移动，↑ 旋转，空格直接落下。',
+             en: 'A squishy spring-physics Tetris with pastel jelly pieces and confetti line clears. Arrows to move/rotate, Space to drop.' },
+    tags:  { zh: ['#软体物理', '#休闲', '#Canvas'], en: ['#soft-body', '#casual', '#canvas'] },
+    href:  'jelly-tetris/',
+  },
+  {
+    icon: '🍅',
+    title: { zh: 'WWWtodo 番茄钟', en: 'WWWtodo' },
+    desc:  { zh: 'What · How · When to do：番茄钟 + 每日计划 + 个人日记。自定义正/倒计时、半星制专注评分、日/周/月统计热力图、手账风日记。数据本地保存，可导出备份。',
+             en: 'What · How · When to do — a Pomodoro timer + daily planner + personal diary. Custom count-up/down timers, half-star focus rating, day/week/month stats & heatmap, paper-style journal. All data stays local and exportable.' },
+    tags:  { zh: ['#番茄钟', '#日记', '#效率'], en: ['#pomodoro', '#journal', '#productivity'] },
+    href:  'wwwtodo/',
+  },
+  {
+    icon: '✨',
+    title: { zh: '敬请期待', en: 'Coming soon' },
+    desc:  { zh: '更多小游戏和有趣的小东西正在路上……', en: 'More mini games and fun little things on the way…' },
+    tags:  { zh: ['#未完待续'], en: ['#wip'] },
+    href:  null,
+  },
+];
+
+const I18N = {
+  brand: { zh: '个人主页', en: 'Home' },
+  desc:  { zh: '一些随手做的小游戏和有趣的小东西，纯粹为了好玩。', en: 'A corner for mini games and fun little experiments — just for fun.' },
+  play:  { zh: '开玩', en: 'Play' },
+  soon:  { zh: '待定', en: 'Soon' },
+  foot:  { zh: 'Just For Fun · 摸鱼专区', en: 'Just For Fun · the playground' },
+};
+
+let lang = localStorage.getItem('lang') || 'zh';
+const t = o => o ? (o[lang] ?? o.zh) : '';
+
+function render(){
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.title = lang === 'zh' ? 'Just For Fun · 角落' : 'Just For Fun';
+  document.getElementById('brandText').textContent = t(I18N.brand);
+  document.getElementById('heroDesc').textContent = t(I18N.desc);
+  document.getElementById('footText').textContent = t(I18N.foot);
+  document.getElementById('langBtn').textContent = lang === 'zh' ? 'EN' : '中文';
+
+  const wrap = document.getElementById('game-list');
+  wrap.innerHTML = '';
+  GAMES.forEach(g => {
+    const node = document.createElement(g.href ? 'a' : 'div');
+    node.className = 'gcard reveal' + (g.href ? '' : ' soon');
+    if (g.href) node.href = g.href;
+
+    const play = document.createElement('span');
+    play.className = 'play';
+    play.textContent = g.href ? t(I18N.play) : t(I18N.soon);
+    node.appendChild(play);
+
+    const icon = document.createElement('div');
+    icon.className = 'icon';
+    icon.textContent = g.icon;
+    node.appendChild(icon);
+
+    const title = document.createElement('div');
+    title.className = 'title';
+    title.textContent = t(g.title);
+    node.appendChild(title);
+
+    const desc = document.createElement('div');
+    desc.className = 'desc';
+    desc.textContent = t(g.desc);
+    node.appendChild(desc);
+
+    const tags = document.createElement('div');
+    tags.className = 'tags';
+    t(g.tags).forEach(tx => {
+      const s = document.createElement('span');
+      s.className = 'tag';
+      s.textContent = tx;
+      tags.appendChild(s);
+    });
+    node.appendChild(tags);
+
+    wrap.appendChild(node);
+  });
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: .08 });
+  document.querySelectorAll('.reveal:not(.in)').forEach(n => io.observe(n));
+}
+
+document.getElementById('langBtn').addEventListener('click', () => {
+  lang = lang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('lang', lang);
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#15151f"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="12.5" fill="none" stroke="#26263a" stroke-width="1.5"/>
+  <text x="32" y="33" text-anchor="middle" dominant-baseline="central"
+        font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="38" font-weight="700"
+        fill="#2dd4bf">杨</text>
+</svg>

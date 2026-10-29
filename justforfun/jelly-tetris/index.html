@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+<title>软体俄罗斯方块 · Jelly Tetris</title>
+<style>
+  :root{
+    --ink:#4a5568;
+    --ink-soft:#8a97a8;
+    --card:rgba(255,255,255,.38);
+    --accent:#6fb7a5;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:"Quicksand","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 700px at 15% -10%, #d9f2ea 0%, transparent 60%),
+      radial-gradient(1000px 800px at 110% 20%, #fdeedd 0%, transparent 55%),
+      radial-gradient(900px 900px at 50% 120%, #e6e4f7 0%, transparent 55%),
+      linear-gradient(160deg,#eef8f4 0%,#fdf6ec 100%);
+    min-height:100%;
+    display:flex;align-items:center;justify-content:center;
+    padding:0;
+    overflow:hidden;
+  }
+  /* 漂浮的装饰气泡 */
+  .bubble{
+    position:fixed;border-radius:50%;pointer-events:none;z-index:0;
+    background:radial-gradient(circle at 32% 30%, rgba(255,255,255,.85), rgba(255,255,255,.06) 62%);
+    box-shadow:inset 0 0 18px rgba(255,255,255,.5);
+    animation:drift linear infinite;
+    opacity:.7;
+  }
+  @keyframes drift{
+    0%{transform:translateY(0) translateX(0);}
+    50%{transform:translateY(-46px) translateX(18px);}
+    100%{transform:translateY(0) translateX(0);}
+  }
+  .stage{
+    position:relative;z-index:1;
+    display:flex;gap:22px;align-items:center;justify-content:center;
+    width:100vw;height:100vh;height:100dvh;
+    padding:18px;
+  }
+  .board-wrap{
+    position:relative;
+    height:100%;
+    display:flex;align-items:center;
+    border-radius:26px;
+    padding:14px;
+    background:var(--card);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    box-shadow:0 24px 60px rgba(90,120,110,.18), 0 2px 0 rgba(255,255,255,.8) inset;
+    border:1px solid rgba(255,255,255,.55);
+  }
+  canvas#board{
+    display:block;border-radius:16px;
+    height:100%;width:auto;
+    background:rgba(255,255,255,.28);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);
+  }
+  .overlay{
+    position:absolute;inset:14px;border-radius:16px;
+    display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:rgba(255,255,255,.72);
+    backdrop-filter:blur(6px);
+    text-align:center;
+  }
+  .overlay.show{display:flex;}
+  .overlay h2{font-size:26px;letter-spacing:2px;font-weight:700;}
+  .overlay p{color:var(--ink-soft);font-size:14px;}
+  .side{
+    display:flex;flex-direction:column;gap:16px;width:190px;
+    max-height:100%;justify-content:center;overflow-y:auto;
+  }
+  .card{
+    background:var(--card);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-radius:20px;
+    padding:16px 18px;
+    box-shadow:0 14px 34px rgba(90,120,110,.14);
+    border:1px solid rgba(255,255,255,.55);
+  }
+  h1.title{
+    font-size:20px;font-weight:700;letter-spacing:1px;line-height:1.35;
+  }
+  h1.title small{
+    display:block;font-size:11px;font-weight:600;color:var(--ink-soft);
+    letter-spacing:3px;margin-top:4px;text-transform:uppercase;
+  }
+  .card h3{
+    font-size:11px;font-weight:700;letter-spacing:2.5px;color:var(--ink-soft);
+    text-transform:uppercase;margin-bottom:8px;
+  }
+  canvas#next{display:block;margin:0 auto;}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 8px;}
+  .stat .num{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .stat .lbl{font-size:11px;color:var(--ink-soft);letter-spacing:1px;}
+  .btns{display:flex;gap:8px;}
+  button{
+    flex:1;border:none;cursor:pointer;
+    font-family:inherit;font-weight:700;font-size:13px;color:#fff;
+    background:linear-gradient(135deg,#7fc9b6,#5fa8d3);
+    padding:9px 10px;border-radius:12px;
+    box-shadow:0 6px 16px rgba(95,168,211,.32);
+    transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+  }
+  button:hover{transform:translateY(-2px);filter:brightness(1.05);}
+  button:active{transform:translateY(0) scale(.97);}
+  button.ghost{
+    background:rgba(255,255,255,.75);color:var(--ink);
+    box-shadow:0 4px 12px rgba(90,120,110,.14);
+  }
+  .keys{font-size:12px;line-height:2;color:var(--ink-soft);}
+  .keys b{
+    display:inline-block;min-width:26px;text-align:center;
+    background:rgba(255,255,255,.85);border:1px solid rgba(120,140,130,.18);
+    border-radius:6px;padding:1px 6px;margin-right:6px;color:var(--ink);
+    font-weight:700;box-shadow:0 1px 0 rgba(120,140,130,.15);
+  }
+  .touch-pad{
+    display:none;position:fixed;left:0;right:0;bottom:0;z-index:5;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    justify-content:space-between;gap:10px;
+    background:linear-gradient(to top, rgba(250,252,251,.92), rgba(250,252,251,0));
+  }
+  .touch-pad .group{display:flex;gap:10px;}
+  .touch-pad button{
+    flex:none;width:56px;height:56px;border-radius:50%;font-size:20px;
+    background:rgba(255,255,255,.85);color:var(--ink);
+    box-shadow:0 8px 20px rgba(90,120,110,.22);
+  }
+  .backlink{
+    position:fixed;top:14px;left:16px;z-index:10;
+    font-size:13px;font-weight:700;color:var(--ink);text-decoration:none;
+    background:rgba(255,255,255,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    padding:7px 15px;border-radius:999px;border:1px solid rgba(255,255,255,.7);
+    box-shadow:0 4px 14px rgba(90,120,110,.16);
+    transition:transform .12s ease;
+  }
+  .backlink:hover{transform:translateY(-1px);}
+  @media (pointer:coarse){
+    .touch-pad{display:flex;}
+    .stage{padding-bottom:96px;}
+  }
+  @media (max-width:640px){
+    .stage{flex-direction:column;align-items:center;gap:12px;}
+    .board-wrap{height:min(62vh, 100%);flex:none;}
+    .side{flex-direction:row;flex-wrap:wrap;width:auto;justify-content:center;max-height:none;overflow:visible;}
+  }
+</style>
+</head>
+<body>
+  <a class="backlink" href="../">← Just For Fun</a>
+  <div class="stage">
+    <div class="board-wrap">
+      <canvas id="board" width="320" height="640"></canvas>
+      <div class="overlay" id="overlay">
+        <h2 id="overlayTitle">游戏结束</h2>
+        <p id="overlayText">按 R 或点击按钮重新开始</p>
+        <button id="overlayBtn" style="flex:none;padding:10px 26px;">再来一局</button>
+      </div>
+    </div>
+    <div class="side">
+      <div class="card">
+        <h1 class="title">软体俄罗斯方块<small>Jelly Tetris</small></h1>
+      </div>
+      <div class="card">
+        <h3>下一个</h3>
+        <canvas id="next" width="120" height="72"></canvas>
+      </div>
+      <div class="card">
+        <div class="stats">
+          <div class="stat"><div class="num" id="score">0</div><div class="lbl">分数</div></div>
+          <div class="stat"><div class="num" id="level">1</div><div class="lbl">等级</div></div>
+          <div class="stat"><div class="num" id="lines">0</div><div class="lbl">消行</div></div>
+          <div class="stat"><div class="num" id="best">0</div><div class="lbl">最高分</div></div>
+        </div>
+      </div>
+      <div class="card btns">
+        <button id="restartBtn">重新开始</button>
+        <button id="soundBtn" class="ghost">音效:开</button>
+      </div>
+      <div class="card keys">
+        <b>←</b><b>→</b>移动<br>
+        <b>↓</b>加速下落 &nbsp;<b>↑</b>旋转<br>
+        <b>空格</b>直接落下<br>
+        <b>P</b>暂停 &nbsp;<b>R</b>重开
+      </div>
+    </div>
+  </div>
+
+  <div class="touch-pad">
+    <div class="group">
+      <button data-act="left">◀</button>
+      <button data-act="down">▼</button>
+      <button data-act="right">▶</button>
+    </div>
+    <div class="group">
+      <button data-act="rotate">⟳</button>
+      <button data-act="drop">⤓</button>
+    </div>
+  </div>
+
+<script>
+"use strict";
+/* ================= 基础常量 ================= */
+const COLS = 10, ROWS = 20, CELL = 32;
+const canvas = document.getElementById("board");
+const ctx = canvas.getContext("2d");
+const nextCanvas = document.getElementById("next");
+const nctx = nextCanvas.getContext("2d");
+
+// 高 DPI 适配
+function fitCanvas(c, w, h){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  c.width = w * dpr; c.height = h * dpr;
+  c.style.width = w + "px"; c.style.height = h + "px";
+  c.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+fitCanvas(canvas, COLS * CELL, ROWS * CELL);
+// 棋盘画布交给 CSS 控制显示尺寸（全屏高度），内部分辨率保持不变
+canvas.style.width = "";
+canvas.style.height = "";
+fitCanvas(nextCanvas, 120, 72);
+
+/* ================= 方块定义（清新马卡龙配色） ================= */
+const SHAPES = {
+  I:{ size:4, cells:[[0,1],[1,1],[2,1],[3,1]], color:"#7bdff2" },
+  O:{ size:2, cells:[[0,0],[1,0],[0,1],[1,1]], color:"#ffd97d" },
+  T:{ size:3, cells:[[1,0],[0,1],[1,1],[2,1]], color:"#c3aed6" },
+  S:{ size:3, cells:[[1,0],[2,0],[0,1],[1,1]], color:"#95e1a3" },
+  Z:{ size:3, cells:[[0,0],[1,0],[1,1],[2,1]], color:"#ff9aa2" },
+  J:{ size:3, cells:[[0,0],[0,1],[1,1],[2,1]], color:"#8fc1e9" },
+  L:{ size:3, cells:[[2,0],[0,1],[1,1],[2,1]], color:"#ffb480" },
+};
+const TYPES = Object.keys(SHAPES);
+// 预计算 4 个旋转态
+const ROTS = {};
+for (const t of TYPES){
+  const { cells, size } = SHAPES[t];
+  const rots = [cells];
+  for (let r = 1; r < 4; r++){
+    rots.push(rots[r-1].map(([x,y]) => [size - 1 - y, x]));
+  }
+  ROTS[t] = rots;
+}
+
+/* ================= 音效（WebAudio 小合成器） ================= */
+let soundOn = true;
+let actx = null;
+function beep(freq, dur = 0.06, type = "sine", vol = 0.05, when = 0){
+  if (!soundOn) return;
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = actx.currentTime + when;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }catch(e){}
+}
+const sfx = {
+  move:   () => beep(240, 0.04, "sine", 0.03),
+  rotate: () => beep(340, 0.05, "triangle", 0.045),
+  lock:   () => { beep(160, 0.09, "triangle", 0.06); beep(90, 0.12, "sine", 0.05); },
+  clear:  (n) => { for(let i=0;i<n+2;i++) beep(420 + i*130, 0.09, "sine", 0.05, i*0.06); },
+  drop:   () => beep(120, 0.1, "square", 0.04),
+  over:   () => { for(let i=0;i<5;i++) beep(400 - i*70, 0.16, "sine", 0.05, i*0.14); },
+};
+
+/* ================= 游戏状态 ================= */
+let board, piece, nextType, bag = [];
+let score, lines, level, best = +(localStorage.getItem("jellyTetrisBest") || 0);
+let state;            // 'playing' | 'clearing' | 'paused' | 'over'
+let gravityAcc, lockTimer, lockResets;
+let clearRows, clearTimer;
+let particles = [];
+let shake = 0;
+let softDropping = false;
+
+function newBoard(){
+  return Array.from({length: ROWS}, () => Array(COLS).fill(null));
+}
+function drawFromBag(){
+  if (bag.length === 0){
+    bag = TYPES.slice();
+    for (let i = bag.length - 1; i > 0; i--){
+      const j = (Math.random() * (i + 1)) | 0;
+      [bag[i], bag[j]] = [bag[j], bag[i]];
+    }
+  }
+  return bag.pop();
+}
+
+function spawn(){
+  const type = nextType || drawFromBag();
+  nextType = drawFromBag();
+  const cells = ROTS[type][0];
+  piece = {
+    type, rot: 0, cells,
+    px: 3, py: 0,
+    // 每个细胞一个弹簧质点（像素坐标），营造果冻感
+    pts: cells.map(([cx, cy]) => ({
+      x: (3 + cx + 0.5) * CELL + (Math.random() - 0.5) * 26,
+      y: (cy + 0.5) * CELL - 30 - Math.random() * 40,
+      vx: 0, vy: 0,
+    })),
+  };
+  lockTimer = 0; lockResets = 0;
+  if (collide(piece.cells, piece.px, piece.py)){
+    gameOver();
+  }
+  drawNext();
+}
+
+function collide(cells, px, py){
+  for (const [cx, cy] of cells){
+    const gx = px + cx, gy = py + cy;
+    if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+    if (gy >= 0 && board[gy][gx]) return true;
+  }
+  return false;
+}
+
+function tryMove(dx, dy){
+  if (state !== "playing") return false;
+  if (!collide(piece.cells, piece.px + dx, piece.py + dy)){
+    piece.px += dx; piece.py += dy;
+    if (dy === 0){
+      for (const p of piece.pts) p.vx += dx * 60; // 果冻甩动
+      if (lockTimer > 0 && lockResets < 12){ lockTimer = 0; lockResets++; }
+      sfx.move();
+    }
+    return true;
+  }
+  return false;
+}
+
+function rotate(){
+  if (state !== "playing") return;
+  const nrot = (piece.rot + 1) % 4;
+  const ncells = ROTS[piece.type][nrot];
+  const kicks = piece.type === "I"
+    ? [[0,0],[1,0],[-1,0],[2,0],[-2,0],[0,-1]]
+    : [[0,0],[1,0],[-1,0],[0,-1]];
+  for (const [kx, ky] of kicks){
+    if (!collide(ncells, piece.px + kx, piece.py + ky)){
+      // 给质点一个切向速度，旋转时果冻会"拧"一下
+      for (let i = 0; i < piece.pts.length; i++){
+        const [ox, oy] = piece.cells[i], [nx, ny] = ncells[i];
+        piece.pts[i].vx += (nx - ox) * -140;
+        piece.pts[i].vy += (ny - oy) * -140;
+      }
+      piece.cells = ncells; piece.rot = nrot;
+      piece.px += kx; piece.py += ky;
+      if (lockTimer > 0 && lockResets < 12){ lockTimer = 0; lockResets++; }
+      sfx.rotate();
+      return;
+    }
+  }
+}
+
+function ghostRow(){
+  let gy = piece.py;
+  while (!collide(piece.cells, piece.px, gy + 1)) gy++;
+  return gy;
+}
+
+function hardDrop(){
+  if (state !== "playing") return;
+  const gy = ghostRow();
+  score += (gy - piece.py) * 2;
+  piece.py = gy;
+  for (const p of piece.pts) p.vy += 260;
+  sfx.drop();
+  lockPiece(true);
+}
+
+function lockPiece(hard = false){
+  let locked = [];
+  for (const [cx, cy] of piece.cells){
+    const gx = piece.px + cx, gy = piece.py + cy;
+    if (gy < 0){ gameOver(); return; }
+    board[gy][gx] = {
+      c: SHAPES[piece.type].color,
+      ox: 0, oy: 0,
+      vx: (Math.random() - 0.5) * 60,
+      vy: hard ? 300 : 170,   // 落下时的果冻冲击
+    };
+    locked.push([gx, gy]);
+  }
+  // 邻近的已固定块也跟着轻轻晃
+  for (const [gx, gy] of locked){
+    for (let dy = -1; dy <= 1; dy++){
+      for (let dx = -1; dx <= 1; dx++){
+        const nx = gx + dx, ny = gy + dy;
+        if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && board[ny][nx] && !locked.some(([a,b]) => a===nx && b===ny)){
+          board[ny][nx].vy += 70;
+          board[ny][nx].vx += (Math.random() - 0.5) * 40;
+        }
+      }
+    }
+  }
+  shake = Math.min(shake + (hard ? 7 : 4), 10);
+  sfx.lock();
+
+  clearRows = [];
+  for (let y = 0; y < ROWS; y++){
+    if (board[y].every(c => c)) clearRows.push(y);
+  }
+  if (clearRows.length){
+    state = "clearing";
+    clearTimer = 0.32;
+    const n = clearRows.length;
+    const gain = [0, 100, 300, 500, 800][n] * level;
+    score += gain;
+    lines += n;
+    level = Math.floor(lines / 10) + 1;
+    sfx.clear(n);
+    shake = Math.min(shake + n * 3, 14);
+    for (const y of clearRows){
+      for (let x = 0; x < COLS; x++){
+        const c = board[y][x];
+        for (let k = 0; k < 3; k++){
+          particles.push({
+            x: (x + 0.5) * CELL, y: (y + 0.5) * CELL,
+            vx: (Math.random() - 0.5) * 320,
+            vy: -Math.random() * 300 - 60,
+            life: 0.7 + Math.random() * 0.4,
+            t: 0,
+            size: 3 + Math.random() * 5,
+            color: c.c,
+          });
+        }
+      }
+    }
+    updateHud();
+  } else {
+    spawn();
+  }
+}
+
+function finishClear(){
+  // 上方的块因消行而颤动
+  for (let y = 0; y < ROWS; y++){
+    for (let x = 0; x < COLS; x++){
+      if (board[y][x] && !clearRows.includes(y)){
+        board[y][x].vy -= 180;
+      }
+    }
+  }
+  for (const y of clearRows){
+    board.splice(y, 1);
+    board.unshift(Array(COLS).fill(null));
+  }
+  clearRows = [];
+  spawn();
+  state = "playing";
+}
+
+function gameOver(){
+  state = "over";
+  sfx.over();
+  if (score > best){
+    best = score;
+    localStorage.setItem("jellyTetrisBest", String(best));
+  }
+  document.getElementById("overlayTitle").textContent = "游戏结束";
+  document.getElementById("overlayText").textContent = `本局得分 ${score} · 按 R 再来一局`;
+  document.getElementById("overlay").classList.add("show");
+  updateHud();
+}
+
+function restart(){
+  board = newBoard();
+  bag = [];
+  nextType = null;
+  score = 0; lines = 0; level = 1;
+  gravityAcc = 0; particles = []; shake = 0;
+  clearRows = [];
+  state = "playing";
+  document.getElementById("overlay").classList.remove("show");
+  spawn();
+  updateHud();
+}
+
+function togglePause(){
+  if (state === "playing"){ state = "paused"; }
+  else if (state === "paused"){ state = "playing"; }
+}
+
+/* ================= 更新 ================= */
+function gravityInterval(){
+  return Math.max(0.06, 0.8 - (level - 1) * 0.07);
+}
+
+function springStep(p, tx, ty, dt){
+  // 半隐式弹簧：k 决定回弹速度，damp 决定果冻"黏度"
+  const K = 170, damp = Math.exp(-9 * dt);
+  p.vx = (p.vx + (tx - p.x) * K * dt) * damp;
+  p.vy = (p.vy + (ty - p.y) * K * dt) * damp;
+  p.x += p.vx * dt;
+  p.y += p.vy * dt;
+}
+
+function update(dt){
+  if (state === "playing"){
+    const interval = softDropping ? 0.045 : gravityInterval();
+    gravityAcc += dt;
+    while (gravityAcc >= interval){
+      gravityAcc -= interval;
+      if (tryMove(0, 1)){
+        lockTimer = 0;
+        if (softDropping) score += 1;
+      } else {
+        gravityAcc = 0;   // 被挡住时清零，避免落地后累积的计时瞬间补落
+        break;
+      }
+    }
+    // 触底后短暂锁定延迟，方便最后一秒调整
+    if (collide(piece.cells, piece.px, piece.py + 1)){
+      lockTimer += dt;
+      if (lockTimer > 0.45) lockPiece(false);
+    } else {
+      lockTimer = 0;
+    }
+    // 活动方块质点追踪目标格
+    for (let i = 0; i < piece.pts.length; i++){
+      const [cx, cy] = piece.cells[i];
+      springStep(piece.pts[i], (piece.px + cx + 0.5) * CELL, (piece.py + cy + 0.5) * CELL, dt);
+    }
+  } else if (state === "clearing"){
+    clearTimer -= dt;
+    if (clearTimer <= 0) finishClear();
+  }
+
+  // 已固定块的果冻回弹
+  for (let y = 0; y < ROWS; y++){
+    for (let x = 0; x < COLS; x++){
+      const c = board[y][x];
+      if (!c) continue;
+      const K = 120, damp = Math.exp(-7 * dt);
+      c.vx = (c.vx - c.ox * K * dt) * damp;
+      c.vy = (c.vy - c.oy * K * dt) * damp;
+      c.ox += c.vx * dt;
+      c.oy += c.vy * dt;
+    }
+  }
+
+  // 粒子
+  for (let i = particles.length - 1; i >= 0; i--){
+    const p = particles[i];
+    p.t += dt;
+    if (p.t >= p.life){ particles.splice(i, 1); continue; }
+    p.vy += 620 * dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+  }
+  shake *= Math.exp(-6 * dt);
+  if (shake < 0.1) shake = 0;
+}
+
+/* ================= 绘制 ================= */
+function rr(c, x, y, w, h, r){
+  c.beginPath();
+  c.moveTo(x + r, y);
+  c.arcTo(x + w, y, x + w, y + h, r);
+  c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r);
+  c.arcTo(x, y, x + w, y, r);
+  c.closePath();
+}
+
+function hexA(hex, a){
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function drawCell(c, x, y, color, alpha = 1){
+  const pad = 2.5, s = CELL - pad * 2;
+  c.save();
+  c.globalAlpha = alpha;
+  const g = c.createLinearGradient(x, y, x, y + CELL);
+  g.addColorStop(0, hexA(color, 1));
+  g.addColorStop(1, hexA(color, 0.82));
+  rr(c, x + pad, y + pad, s, s, 9);
+  c.fillStyle = g;
+  c.fill();
+  // 顶部高光
+  rr(c, x + pad + 4, y + pad + 3, s - 8, s * 0.34, 7);
+  c.fillStyle = "rgba(255,255,255,.35)";
+  c.fill();
+  c.restore();
+}
+
+// 把活动方块画成一团连接的果冻：相邻细胞用粗圆头线桥接，再叠圆形
+function drawJelly(c, pts, color, cells){
+  c.save();
+  c.lineCap = "round";
+  // 细胞阴影
+  for (const p of pts){
+    c.beginPath();
+    c.ellipse(p.x, p.y + CELL * 0.42, CELL * 0.34, CELL * 0.12, 0, 0, Math.PI * 2);
+    c.fillStyle = "rgba(80,100,95,.12)";
+    c.fill();
+  }
+  // 桥接相邻细胞
+  c.strokeStyle = color;
+  c.lineWidth = CELL * 0.86;
+  for (let i = 0; i < cells.length; i++){
+    for (let j = i + 1; j < cells.length; j++){
+      const dx = cells[i][0] - cells[j][0], dy = cells[i][1] - cells[j][1];
+      if (Math.abs(dx) + Math.abs(dy) === 1){
+        c.beginPath();
+        c.moveTo(pts[i].x, pts[i].y);
+        c.lineTo(pts[j].x, pts[j].y);
+        c.stroke();
+      }
+    }
+  }
+  // 细胞本体 + 高光
+  for (const p of pts){
+    c.beginPath();
+    c.arc(p.x, p.y, CELL * 0.44, 0, Math.PI * 2);
+    c.fillStyle = color;
+    c.fill();
+    c.beginPath();
+    c.arc(p.x - CELL * 0.12, p.y - CELL * 0.14, CELL * 0.15, 0, Math.PI * 2);
+    c.fillStyle = "rgba(255,255,255,.4)";
+    c.fill();
+  }
+  c.restore();
+}
+
+function draw(){
+  const W = COLS * CELL, H = ROWS * CELL;
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  if (shake > 0){
+    ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+  }
+
+  // 网格
+  ctx.strokeStyle = "rgba(90,110,100,.07)";
+  ctx.lineWidth = 1;
+  for (let x = 1; x < COLS; x++){
+    ctx.beginPath(); ctx.moveTo(x * CELL, 0); ctx.lineTo(x * CELL, H); ctx.stroke();
+  }
+  for (let y = 1; y < ROWS; y++){
+    ctx.beginPath(); ctx.moveTo(0, y * CELL); ctx.lineTo(W, y * CELL); ctx.stroke();
+  }
+
+  // 已固定的块
+  for (let y = 0; y < ROWS; y++){
+    for (let x = 0; x < COLS; x++){
+      const c = board[y][x];
+      if (!c) continue;
+      const clearing = clearRows.includes(y);
+      const flash = clearing ? (0.5 + 0.5 * Math.sin(performance.now() / 40)) : 0;
+      drawCell(ctx, x * CELL + c.ox, y * CELL + c.oy, c.c, clearing ? 0.4 + flash * 0.6 : 1);
+    }
+  }
+
+  if (piece && (state === "playing" || state === "paused")){
+    // 投影（幽灵块）
+    if (state === "playing"){
+      const gy = ghostRow();
+      if (gy !== piece.py){
+        for (const [cx, cy] of piece.cells){
+          const gx = piece.px + cx, gyy = gy + cy;
+          if (gyy >= 0){
+            rr(ctx, gx * CELL + 5, gyy * CELL + 5, CELL - 10, CELL - 10, 8);
+            ctx.strokeStyle = hexA(SHAPES[piece.type].color, 0.45);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+    drawJelly(ctx, piece.pts, SHAPES[piece.type].color, piece.cells);
+  }
+
+  // 粒子
+  for (const p of particles){
+    const a = 1 - p.t / p.life;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.t * 6);
+    rr(ctx, -p.size / 2, -p.size / 2, p.size, p.size, 2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+
+  if (state === "paused"){
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,.6)";
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#4a5568";
+    ctx.font = "700 24px Quicksand, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("已暂停", W / 2, H / 2 - 8);
+    ctx.font = "500 13px Quicksand, sans-serif";
+    ctx.fillStyle = "#8a97a8";
+    ctx.fillText("按 P 继续", W / 2, H / 2 + 20);
+    ctx.restore();
+  }
+}
+
+function drawNext(){
+  nctx.clearRect(0, 0, 120, 72);
+  if (!nextType) return;
+  const { color, size } = SHAPES[nextType];
+  const cells = ROTS[nextType][0];
+  const mini = 17;
+  const minX = Math.min(...cells.map(c => c[0])), maxX = Math.max(...cells.map(c => c[0]));
+  const minY = Math.min(...cells.map(c => c[1])), maxY = Math.max(...cells.map(c => c[1]));
+  const offX = 60 - ((maxX - minX + 1) * mini) / 2;
+  const offY = 36 - ((maxY - minY + 1) * mini) / 2;
+  const pts = cells.map(([cx, cy]) => ({
+    x: offX + (cx - minX + 0.5) * mini,
+    y: offY + (cy - minY + 0.5) * mini,
+  }));
+  const rel = cells.map(([cx, cy]) => [cx - minX, cy - minY]);
+  nctx.save();
+  nctx.lineCap = "round";
+  nctx.strokeStyle = color;
+  nctx.lineWidth = mini * 0.86;
+  for (let i = 0; i < rel.length; i++){
+    for (let j = i + 1; j < rel.length; j++){
+      if (Math.abs(rel[i][0]-rel[j][0]) + Math.abs(rel[i][1]-rel[j][1]) === 1){
+        nctx.beginPath();
+        nctx.moveTo(pts[i].x, pts[i].y);
+        nctx.lineTo(pts[j].x, pts[j].y);
+        nctx.stroke();
+      }
+    }
+  }
+  for (const p of pts){
+    nctx.beginPath();
+    nctx.arc(p.x, p.y, mini * 0.44, 0, Math.PI * 2);
+    nctx.fillStyle = color;
+    nctx.fill();
+    nctx.beginPath();
+    nctx.arc(p.x - mini * 0.12, p.y - mini * 0.14, mini * 0.15, 0, Math.PI * 2);
+    nctx.fillStyle = "rgba(255,255,255,.4)";
+    nctx.fill();
+  }
+  nctx.restore();
+}
+
+function updateHud(){
+  document.getElementById("score").textContent = score;
+  document.getElementById("level").textContent = level;
+  document.getElementById("lines").textContent = lines;
+  document.getElementById("best").textContent = best;
+}
+
+/* ================= 主循环 ================= */
+let last = performance.now();
+function loop(now){
+  const dt = Math.min((now - last) / 1000, 0.05);
+  last = now;
+  if (state !== "paused" && state !== "over") update(dt);
+  draw();
+  if (state === "playing") updateHud();
+  requestAnimationFrame(loop);
+}
+
+/* ================= 输入 ================= */
+document.addEventListener("keydown", (e) => {
+  const k = e.key;
+  if (["ArrowLeft","ArrowRight","ArrowDown","ArrowUp"," "].includes(k)) e.preventDefault();
+  if (k === "r" || k === "R"){ restart(); return; }
+  if (k === "p" || k === "P" || k === "Escape"){ togglePause(); return; }
+  switch (k){
+    case "ArrowLeft":  tryMove(-1, 0); break;
+    case "ArrowRight": tryMove(1, 0); break;
+    case "ArrowDown":  softDropping = true; break;
+    case "ArrowUp":    rotate(); break;
+    case " ":          hardDrop(); break;
+  }
+});
+document.addEventListener("keyup", (e) => {
+  if (e.key === "ArrowDown") softDropping = false;
+});
+
+document.getElementById("restartBtn").addEventListener("click", restart);
+document.getElementById("overlayBtn").addEventListener("click", restart);
+document.getElementById("soundBtn").addEventListener("click", (e) => {
+  soundOn = !soundOn;
+  e.target.textContent = soundOn ? "音效:开" : "音效:关";
+});
+
+// 触屏按钮
+document.querySelectorAll(".touch-pad button").forEach(btn => {
+  btn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    const act = btn.dataset.act;
+    if (act === "left") tryMove(-1, 0);
+    else if (act === "right") tryMove(1, 0);
+    else if (act === "down") softDropping = true;
+    else if (act === "rotate") rotate();
+    else if (act === "drop") hardDrop();
+  });
+  btn.addEventListener("pointerup", () => { if (btn.dataset.act === "down") softDropping = false; });
+  btn.addEventListener("pointerleave", () => { if (btn.dataset.act === "down") softDropping = false; });
+});
+
+/* ================= 背景装饰气泡 ================= */
+(function bubbles(){
+  const n = 9;
+  for (let i = 0; i < n; i++){
+    const b = document.createElement("div");
+    b.className = "bubble";
+    const s = 30 + Math.random() * 110;
+    b.style.width = b.style.height = s + "px";
+    b.style.left = Math.random() * 100 + "vw";
+    b.style.top = Math.random() * 100 + "vh";
+    b.style.animationDuration = 7 + Math.random() * 9 + "s";
+    b.style.animationDelay = -Math.random() * 10 + "s";
+    document.body.appendChild(b);
+  }
+})();
+
+restart();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

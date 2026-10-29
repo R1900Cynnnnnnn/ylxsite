@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>个人主页</title>
+<meta name="description" content="上海科技大学 电子信息工程 · 个人主页" />
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<style>
+  :root{
+    --bg:#0b0b12; --panel:#15151f; --line:#22222f; --line2:#26263a;
+    --text:#e7e7ee; --muted:#8a8a9e; --soft:#cfcfe0; --accent:#2dd4bf;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:880px;margin:0 auto;padding:0 24px}
+
+  /* header */
+  header{
+    position:sticky;top:0;z-index:20;
+    backdrop-filter:blur(14px);background:rgba(11,11,18,.6);
+    border-bottom:1px solid var(--line);
+  }
+  header .wrap{height:60px;display:flex;align-items:center;justify-content:space-between}
+  .brand{font-weight:600;letter-spacing:.2px}
+  nav{display:flex;align-items:center;gap:22px;font-size:14px}
+  nav a{color:var(--muted)}
+  nav a:hover{color:var(--text);text-decoration:none}
+  .langbtn{
+    border:1px solid var(--line2);background:transparent;color:var(--soft);
+    border-radius:8px;padding:5px 11px;font-size:13px;cursor:pointer;font-family:inherit;
+    transition:.2s;
+  }
+  .langbtn:hover{border-color:var(--accent);color:var(--accent)}
+  @media(max-width:640px){nav .navlink{display:none}}
+
+  /* hero */
+  .hero{display:flex;gap:40px;align-items:center;padding:72px 0 56px;flex-wrap:wrap}
+  .avatar{
+    width:170px;height:170px;border-radius:22px;flex-shrink:0;
+    background:linear-gradient(135deg,#1d1d2b,#15151f);
+    border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;
+    font-size:54px;font-weight:700;color:var(--accent);box-shadow:0 18px 40px -20px #000;
+    object-fit:cover;
+  }
+  .hero h1{font-size:clamp(2.1rem,5vw,3.3rem);line-height:1.08;margin:0 0 16px;font-weight:700;letter-spacing:-.5px}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+  .tag{font-size:13px;color:var(--soft);background:var(--panel);border:1px solid var(--line2);border-radius:999px;padding:4px 12px}
+  .intro{color:var(--soft);max-width:46ch;margin:0}
+  .hero-text{min-width:240px;flex:1}
+
+  /* sections */
+  section{padding:40px 0;border-top:1px solid var(--line)}
+  .sec-title{font-size:.82rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:0 0 22px;font-weight:600}
+
+  .item{
+    display:block;padding:18px 20px;margin-bottom:12px;border-radius:14px;
+    background:var(--panel);border:1px solid var(--line2);transition:.2s;
+  }
+  a.item:hover{border-color:var(--accent);text-decoration:none;transform:translateY(-1px)}
+  .item-top{display:flex;justify-content:space-between;gap:14px;align-items:baseline;flex-wrap:wrap}
+  .item-title{font-weight:600;font-size:1.04rem;color:var(--text)}
+  .item-date{font-size:13px;color:var(--muted);white-space:nowrap}
+  .item-meta{font-size:13.5px;color:var(--accent);margin-top:3px}
+  .item-desc{font-size:14.5px;color:var(--soft);margin-top:8px;line-height:1.65}
+
+  /* education 3-column grid */
+  .edu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:720px){.edu-grid{grid-template-columns:1fr}}
+  .edu-card{
+    display:flex;flex-direction:column;gap:10px;padding:20px;border-radius:14px;
+    background:var(--panel);border:1px solid var(--line2);transition:.2s;
+  }
+  a.edu-card:hover{border-color:var(--accent);text-decoration:none;transform:translateY(-2px)}
+  .edu-logo{
+    width:46px;height:46px;border-radius:10px;object-fit:contain;background:#fff;
+    padding:5px;border:1px solid var(--line2);
+  }
+  .edu-date{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .edu-title{font-weight:600;font-size:1.02rem;color:var(--text);line-height:1.35}
+  .edu-meta{font-size:13px;color:var(--accent)}
+  .edu-desc{font-size:13.5px;color:var(--soft);line-height:1.6;margin-top:2px}
+
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{font-size:13.5px;color:var(--soft);background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:7px 13px}
+
+  footer{padding:46px 0 64px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+  .reveal{opacity:0;transform:translateY(14px);transition:.6s ease}
+  .reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="brand" href="#top" data-i18n="brand">个人主页</a>
+      <nav>
+        <a class="navlink" href="#education" data-i18n="nav.education">教育</a>
+        <a class="navlink" href="#engineering" data-i18n="nav.engineering">工程实践</a>
+        <a class="navlink" href="#courses" data-i18n="nav.courses">课程</a>
+        <a class="navlink" href="#skills" data-i18n="nav.skills">技能</a>
+        <a class="navlink" href="justforfun/" data-i18n="nav.fun">好玩</a>
+        <button class="langbtn" id="langBtn">EN</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap" id="top">
+    <!-- Hero -->
+    <section class="hero" style="border-top:none">
+      <div class="avatar reveal" id="avatar"></div>
+      <div class="hero-text">
+        <h1 class="reveal" data-i18n="name">你的名字</h1>
+        <div class="tags reveal" id="tags"></div>
+        <p class="intro reveal" data-i18n="intro"></p>
+      </div>
+    </section>
+
+    <!-- Education -->
+    <section id="education">
+      <h2 class="sec-title reveal" data-i18n="sec.education">教育经历</h2>
+      <div id="education-list"></div>
+    </section>
+
+    <!-- Engineering -->
+    <section id="engineering">
+      <h2 class="sec-title reveal" data-i18n="sec.engineering">工程实践</h2>
+      <div id="engineering-list"></div>
+    </section>
+
+    <!-- Courses -->
+    <section id="courses">
+      <h2 class="sec-title reveal" data-i18n="sec.courses">课程基础</h2>
+      <div class="chips reveal" id="courses-list"></div>
+    </section>
+
+    <!-- Skills -->
+    <section id="skills">
+      <h2 class="sec-title reveal" data-i18n="sec.skills">工具与技能</h2>
+      <div id="skills-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap row">
+      <span id="copyright"></span>
+      <span data-i18n="footer.note"></span>
+    </div>
+    <div class="wrap" style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap">
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">蜀ICP备2026033475号</a>
+      <a href="https://beian.mps.gov.cn/#/query/webSearch?code=31011502406819" target="_blank" rel="noopener noreferrer">沪公网安备31011502406819号</a>
+      <a href="https://github.com/R1900Cynnnnnnn" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+  </footer>
+
+<script>
+/* ============================================================
+   所有内容集中在这里 —— 修改文字只需改这个 DATA 对象
+   每个字段都是 { zh: '中文', en: 'English' }
+   ============================================================ */
+const DATA = {
+  meta: {
+    initial: '杨',                       // 头像里显示的字（可改成英文缩写）
+    name:    { zh: '杨乐鑫', en: 'Yang Lexin' },
+    title:   { zh: '个人主页', en: 'Home' },
+    intro: {
+      zh: '上海科技大学电子信息工程本科生，热衷于机械、电控与视觉的跨学科工程实践，曾在 RoboMaster 团队从结构设计做到跨模块联调。',
+      en: 'Undergraduate in Electronic & Information Engineering at ShanghaiTech University. Passionate about cross-disciplinary engineering across mechanics, electronics, and vision — from structural design to cross-module integration in RoboMaster.'
+    },
+    tags: {
+      zh: ['#电子信息工程', '#RoboMaster', '#机械设计', '#电控', '#视觉'],
+      en: ['#EE', '#RoboMaster', '#Mechanical', '#Electronics', '#Vision']
+    },
+  },
+
+  sections: {
+    education: { zh: '教育经历', en: 'Education' },
+    engineering: { zh: '工程实践', en: 'Engineering' },
+    courses: { zh: '课程基础', en: 'Coursework' },
+    skills: { zh: '工具与技能', en: 'Tools & Skills' },
+  },
+
+  nav: {
+    education: { zh: '教育', en: 'Education' },
+    engineering: { zh: '工程实践', en: 'Engineering' },
+    courses: { zh: '课程', en: 'Courses' },
+    skills: { zh: '技能', en: 'Skills' },
+    fun: { zh: '角落', en: 'Corner' },
+  },
+
+  education: [
+    {
+      title: { zh: '上海科技大学', en: 'ShanghaiTech University' },
+      meta:  { zh: '电子信息工程 · 本科在读（大二下）', en: 'B.Eng. in Electronic & Information Engineering · Sophomore' },
+      date:  { zh: '大学', en: 'University' },
+      desc:  {
+        zh: 'GPA 3.41（截至大二上）；前三学期分别为 3.14 / 3.41 / 3.64，呈持续上升趋势。',
+        en: 'GPA 3.41 (through 3rd semester); term GPAs of 3.14 / 3.41 / 3.64 — a steady upward trend.'
+      },
+      href: 'https://www.shanghaitech.edu.cn/',
+      logo:  'assets/logos/shanghaitech.svg',
+    },
+    {
+      title: { zh: '成都市树德外国语中学', en: 'Chengdu Shude Foreign Languages School' },
+      meta:  { zh: '高中', en: 'High School' },
+      date:  { zh: '高中', en: 'High School' },
+      logo:  'assets/logos/shude.jpg',
+    },
+    {
+      title: { zh: '成都市第四十九中学', en: 'Chengdu No.49 Middle School' },
+      meta:  { zh: '初中', en: 'Middle School' },
+      date:  { zh: '初中', en: 'Middle School' },
+      logo:  'assets/logos/no49.jpg',
+    },
+  ],
+
+  engineering: [
+    {
+      title: { zh: 'RoboMaster 机器人竞赛', en: 'RoboMaster Robotics Competition' },
+      meta:  { zh: '机械方向为主 · 兼顾视觉与电控', en: 'Mechanical lead · with Vision & Electronics' },
+      date:  { zh: '约 2 年', en: '~2 years' },
+      desc:  {
+        zh: '队内主要负责机械方向，并接手部分视觉与电控相关工作。参与结构设计、装配、调试，以及跨模块联调与基础 PCB 设计。',
+        en: 'Primarily responsible for mechanical design, also taking on vision and electronics work. Involved in structural design, assembly, debugging, cross-module integration, and basic PCB design.'
+      },
+    },
+  ],
+
+  courses: {
+    zh: ['模拟电路', '数字电路', '电磁学', '信号与系统', '计算机编程', '控制原理', '医学影像'],
+    en: ['Analog Circuits', 'Digital Circuits', 'Electromagnetics', 'Signals & Systems', 'Programming', 'Control Theory', 'Medical Imaging'],
+  },
+
+  skills: [
+    {
+      title: { zh: '编程与数据处理', en: 'Programming & Data' },
+      items: { zh: ['Python', 'C / C++', 'Git', 'Linux', 'MATLAB'], en: ['Python', 'C / C++', 'Git', 'Linux', 'MATLAB'] },
+    },
+    {
+      title: { zh: '硬件与工程实现', en: 'Hardware & Engineering' },
+      items: { zh: ['嘉立创 EDA', 'Verilog', 'SolidWorks', 'Bambu Studio'], en: ['JLC EDA', 'Verilog', 'SolidWorks', 'Bambu Studio'] },
+    },
+  ],
+
+  footer: {
+    note: { zh: '', en: '' },
+    rights: { zh: '保留所有权利', en: 'All rights reserved' },
+  },
+};
+
+/* ============================================================
+   渲染逻辑（一般无需修改）
+   ============================================================ */
+let lang = localStorage.getItem('lang') || 'zh';
+
+function t(obj){ return obj ? (obj[lang] ?? obj.zh) : ''; }
+
+function el(tag, cls, html){
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(html != null) e.innerHTML = html;
+  return e;
+}
+
+function itemCard(it){
+  const tag = it.href ? 'a' : 'div';
+  const node = el(tag, 'item reveal');
+  if(it.href){ node.href = it.href; node.target = '_blank'; node.rel = 'noopener noreferrer'; }
+  const top = el('div', 'item-top');
+  top.appendChild(el('span', 'item-title', t(it.title)));
+  if(it.date) top.appendChild(el('span', 'item-date', t(it.date)));
+  node.appendChild(top);
+  if(it.meta) node.appendChild(el('div', 'item-meta', t(it.meta)));
+  if(it.desc) node.appendChild(el('div', 'item-desc', t(it.desc)));
+  return node;
+}
+
+function eduCard(it){
+  const tag = it.href ? 'a' : 'div';
+  const node = el(tag, 'edu-card reveal');
+  if(it.href){ node.href = it.href; node.target = '_blank'; node.rel = 'noopener noreferrer'; }
+  if(it.logo){
+    const img = el('img', 'edu-logo');
+    img.src = it.logo; img.alt = t(it.title); img.loading = 'lazy';
+    node.appendChild(img);
+  }
+  if(it.date) node.appendChild(el('div', 'edu-date', t(it.date)));
+  node.appendChild(el('div', 'edu-title', t(it.title)));
+  if(it.meta) node.appendChild(el('div', 'edu-meta', t(it.meta)));
+  if(it.desc) node.appendChild(el('div', 'edu-desc', t(it.desc)));
+  return node;
+}
+
+function render(){
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.title = t(DATA.meta.name) + (lang === 'zh' ? ' · 个人主页' : ' · Home');
+
+  // i18n simple text nodes
+  document.querySelector('.brand').textContent = t(DATA.meta.title);
+  document.querySelector('[data-i18n="name"]').textContent = t(DATA.meta.name);
+  document.querySelector('.intro').textContent = t(DATA.meta.intro);
+
+  // nav
+  document.querySelectorAll('.navlink').forEach(a=>{
+    const key = a.getAttribute('href').slice(1);
+    const map = {education:'education',engineering:'engineering',courses:'courses',skills:'skills','justforfun/':'fun'};
+    if(DATA.nav[map[key]]) a.textContent = t(DATA.nav[map[key]]);
+  });
+
+  // section titles
+  const titles = {education:'education',engineering:'engineering',courses:'courses',skills:'skills'};
+  document.querySelector('#education .sec-title').textContent = t(DATA.sections.education);
+  document.querySelector('#engineering .sec-title').textContent = t(DATA.sections.engineering);
+  document.querySelector('#courses .sec-title').textContent = t(DATA.sections.courses);
+  document.querySelector('#skills .sec-title').textContent = t(DATA.sections.skills);
+
+  // avatar
+  document.getElementById('avatar').textContent = DATA.meta.initial;
+
+  // tags
+  const tagWrap = document.getElementById('tags');
+  tagWrap.innerHTML = '';
+  t(DATA.meta.tags).forEach(tx => tagWrap.appendChild(el('span','tag',tx)));
+
+  // education
+  const eduWrap = document.getElementById('education-list');
+  eduWrap.innerHTML = '';
+  const eduGrid = el('div','edu-grid');
+  DATA.education.forEach(it => eduGrid.appendChild(eduCard(it)));
+  eduWrap.appendChild(eduGrid);
+
+  // engineering
+  const engWrap = document.getElementById('engineering-list');
+  engWrap.innerHTML = '';
+  DATA.engineering.forEach(it => engWrap.appendChild(itemCard(it)));
+
+  // courses
+  const cWrap = document.getElementById('courses-list');
+  cWrap.innerHTML = '';
+  t(DATA.courses).forEach(c => cWrap.appendChild(el('span','chip',c)));
+
+  // skills
+  const sWrap = document.getElementById('skills-list');
+  sWrap.innerHTML = '';
+  DATA.skills.forEach(group => {
+    const card = el('div','item reveal');
+    card.appendChild(el('div','item-meta', t(group.title)));
+    const chips = el('div','chips'); chips.style.marginTop = '10px';
+    t(group.items).forEach(x => chips.appendChild(el('span','chip',x)));
+    card.appendChild(chips);
+    sWrap.appendChild(card);
+  });
+
+  // footer
+  const year = new Date().getFullYear();
+  document.getElementById('copyright').textContent = `© ${year} ${t(DATA.meta.name)} · ${t(DATA.footer.rights)}`;
+  document.querySelector('[data-i18n="footer.note"]').textContent = t(DATA.footer.note);
+
+  // lang button shows the OTHER language
+  document.getElementById('langBtn').textContent = lang === 'zh' ? 'EN' : '中文';
+
+  observeReveal();
+}
+
+function observeReveal(){
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:.08});
+  document.querySelectorAll('.reveal:not(.in)').forEach(n=>io.observe(n));
+}
+
+document.getElementById('langBtn').addEventListener('click', ()=>{
+  lang = lang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('lang', lang);
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

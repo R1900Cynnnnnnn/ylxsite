@@ -1,0 +1,361 @@
+/* ============================================================
+   WWWtodo — timer.css 「专注」模块样式（类名前缀 .tm-）
+   复用 base.css 的 CSS 变量与 .card / .btn / .input 等通用样式
+   ============================================================ */
+
+/* ---------- 今日概览 ---------- */
+.tm-overview {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 16px 20px;
+  margin-bottom: 22px;
+}
+.tm-overview-item { text-align: center; flex: 1; }
+.tm-overview-num {
+  font-family: var(--font-num);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+.tm-overview-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  letter-spacing: 1px;
+}
+.tm-overview-divider {
+  width: 1px;
+  height: 34px;
+  background: var(--border);
+}
+
+/* ---------- 区块标题 ---------- */
+.tm-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  margin: 4px 4px 12px;
+}
+
+/* ---------- 计时器卡片网格 ---------- */
+.tm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+.tm-card {
+  cursor: pointer;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1.5px solid var(--border);
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.tm-card.active {
+  border-color: var(--primary);
+  background: linear-gradient(180deg, var(--primary-soft), var(--card) 70%);
+  box-shadow: 0 4px 16px rgba(111, 174, 142, 0.18);
+}
+.tm-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.tm-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tm-card-meta {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: var(--font-num);
+}
+.tm-card-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+/* 徽标 */
+.tm-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  letter-spacing: 1px;
+}
+.tm-badge-down { background: var(--primary-soft); color: var(--primary-dark); }
+.tm-badge-up { background: var(--accent-soft); color: var(--accent); }
+.tm-badge-default { background: var(--bg); color: var(--text-muted); }
+
+/* 卡片内迷你按钮 */
+.tm-mini-btn {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  transition: all var(--dur) var(--ease);
+}
+.tm-mini-btn:hover { color: var(--primary-dark); border-color: var(--primary); background: var(--primary-soft); }
+.tm-mini-danger:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
+
+/* 新建卡片 */
+.tm-card-new {
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 8px;
+  border: 1.5px dashed var(--border);
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 96px;
+  transition: all var(--dur) var(--ease);
+}
+.tm-card-new:hover {
+  border-color: var(--primary);
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+}
+.tm-card-new-plus { font-size: 18px; }
+
+/* ---------- 开始按钮 ---------- */
+.tm-start-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+.tm-start-btn {
+  padding: 13px 42px;
+  font-size: 16px;
+  border-radius: 999px;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 16px rgba(111, 174, 142, 0.35);
+}
+
+/* ---------- 专注界面 ---------- */
+.tm-focus {
+  max-width: 480px;
+  margin: 10px auto 0;
+  padding: 30px 26px 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.tm-focus-timer-name {
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tm-focus-planned {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 进度环 + 呼吸动画 */
+.tm-ring-wrap {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 18px auto 8px;
+}
+.tm-ring-wrap.breathing { animation: tm-breathe 3.2s ease-in-out infinite; }
+@keyframes tm-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.022); }
+}
+.tm-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+.tm-ring circle {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+.tm-ring-bg { stroke: var(--border); }
+.tm-ring-fg {
+  stroke: var(--primary);
+  transition: stroke 0.6s var(--ease);
+}
+.tm-phase-break .tm-ring-fg { stroke: var(--accent); }
+
+/* 环中央的时间与阶段 */
+.tm-clock-box {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.tm-clock {
+  font-family: var(--font-num);
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  transition: color 0.6s var(--ease);
+}
+.tm-phase-break .tm-clock { color: var(--accent); }
+.tm-phase-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: var(--primary-dark);
+  transition: color 0.6s var(--ease);
+}
+.tm-phase-break .tm-phase-label { color: var(--accent); }
+
+/* 控制按钮 */
+.tm-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ---------- 弹窗内表单 ---------- */
+.tm-form-field { margin-bottom: 14px; }
+.tm-form-field:last-child { margin-bottom: 0; }
+.tm-form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.tm-required { color: var(--danger); }
+.tm-form-row {
+  display: flex;
+  gap: 12px;
+}
+.tm-form-row .tm-form-field { flex: 1; }
+.tm-modal-text { font-size: 14px; color: var(--text-muted); }
+
+.tm-radio-row { display: flex; gap: 10px; }
+.tm-radio {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all var(--dur) var(--ease);
+}
+.tm-radio input { accent-color: var(--primary); }
+.tm-radio:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+/* ---------- 结束弹窗 ---------- */
+.tm-end-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- 星级评分控件 ---------- */
+.tm-stars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  user-select: none;
+  touch-action: manipulation;
+}
+.tm-star {
+  position: relative;
+  font-size: 22px;
+  line-height: 1;
+  padding: 2px;
+  color: #dfe6dd;
+  transition: transform var(--dur) var(--ease);
+}
+.tm-star .tm-star-bg { display: block; }
+.tm-star .tm-star-fill {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  overflow: hidden;
+  width: 0;
+  color: #f2b54a;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: width 0.12s ease-out;
+}
+/* 选中时逐个点亮的缩放弹跳动画（不带 forwards/both，弹完回默认，避免压过 hover 缩放） */
+.tm-star.lit { animation: tm-star-pop 0.38s var(--ease); }
+@keyframes tm-star-pop {
+  0% { transform: scale(0.6); }
+  55% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.tm-star:hover { transform: scale(1.12); }
+.tm-stars-score {
+  margin-top: 8px;
+  font-family: var(--font-num);
+  font-size: 14px;
+  font-weight: 700;
+  color: #e0a23a;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tm-stars-clear {
+  font-size: 12px;
+  font-weight: 400;
+  font-family: inherit;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--dur) var(--ease);
+}
+.tm-stars-clear:hover { color: var(--danger); }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 640px) {
+  .tm-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .tm-ring-wrap { width: 240px; height: 240px; }
+  .tm-clock { font-size: 42px; }
+  .tm-focus { padding: 24px 16px 20px; }
+  .tm-start-btn { width: 100%; }
+}

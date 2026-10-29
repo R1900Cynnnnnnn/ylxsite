@@ -1,0 +1,303 @@
+/* ============================================================
+   WWWtodo — base.css 设计系统
+   风格：清新淡雅、简约精致（柔和绿 / 米白 / 浅灰）
+   约定（所有模块 agent 遵守）：
+   - 模块专属类名前缀：.tm-（timer）、.hs-（history）、.di-（diary）
+   - 复用本文件的 CSS 变量、.btn / .card / .modal / .toast 等通用样式
+   ============================================================ */
+
+/* ---------- CSS 变量 ---------- */
+:root {
+  /* 配色 */
+  --bg: #f6f7f2;            /* 米白底 */
+  --card: #ffffff;          /* 卡片白 */
+  --primary: #6fae8e;       /* 柔和绿 */
+  --primary-dark: #58997a;  /* 深一点的绿（hover/active） */
+  --primary-soft: #e7f2ec;  /* 浅绿底 */
+  --accent: #e8a87c;        /* 点缀暖橙（少量使用） */
+  --accent-soft: #fbf1e8;
+  --text: #37423c;          /* 主文字：深灰绿 */
+  --text-muted: #8a9a91;    /* 次要文字：灰绿 */
+  --border: #e4e9e2;        /* 浅灰绿描边 */
+  --danger: #d97f72;
+  --danger-soft: #faecea;
+
+  /* 形状 / 阴影 */
+  --radius: 14px;
+  --radius-sm: 9px;
+  --radius-lg: 20px;
+  --shadow: 0 2px 10px rgba(60, 90, 75, 0.06), 0 8px 28px rgba(60, 90, 75, 0.05);
+  --shadow-hover: 0 4px 14px rgba(60, 90, 75, 0.10), 0 12px 36px rgba(60, 90, 75, 0.08);
+  --shadow-pop: 0 10px 40px rgba(50, 75, 62, 0.16);
+
+  /* 动效 */
+  --ease: cubic-bezier(0.22, 0.8, 0.3, 1);
+  --dur: 0.22s;
+
+  /* 字体栈（系统字体） */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-num: "SF Mono", ui-monospace, Consolas, "Roboto Mono", monospace;
+}
+
+/* ---------- Reset ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+input, textarea, select { font: inherit; color: inherit; }
+img { max-width: 100%; display: block; }
+ul, ol { list-style: none; }
+
+/* ---------- 键盘焦点描边（仅键盘导航时显示，鼠标点击不触发） ---------- */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.btn:focus-visible, .nav-item:focus-visible, .modal-close:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.card:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* ---------- 外壳布局 ---------- */
+.app-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 20px 48px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ---------- 顶部品牌栏 ---------- */
+.brand-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 22px 4px 18px;
+}
+.back-home {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--border);
+  background: var(--card);
+  transition: color 0.2s, border-color 0.2s;
+}
+.back-home:hover {
+  color: var(--primary-dark);
+  border-color: var(--primary);
+}
+.brand-logo {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--primary-dark);
+}
+.brand-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  margin-top: 1px;
+}
+
+/* ---------- 导航 ---------- */
+.nav {
+  display: flex;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  box-shadow: var(--shadow);
+}
+.nav-item {
+  padding: 8px 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.nav-item:hover { color: var(--primary-dark); background: var(--primary-soft); }
+.nav-item.active {
+  color: #fff;
+  background: var(--primary);
+  box-shadow: 0 2px 8px rgba(111, 174, 142, 0.35);
+}
+
+/* ---------- 主视图区域 ---------- */
+.main { flex: 1; padding-top: 8px; }
+.view { animation: view-in 0.3s var(--ease); }
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- 工具类 ---------- */
+.hidden { display: none !important; }
+
+/* ---------- 按钮 ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+  user-select: none;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(111, 174, 142, 0.3);
+}
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+.btn-ghost:hover { color: var(--primary-dark); border-color: var(--primary); background: var(--primary-soft); }
+.btn-danger { background: var(--danger-soft); color: var(--danger); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+
+/* ---------- 输入框 ---------- */
+.input, .textarea, .select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  font-size: 14px;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  outline: none;
+}
+.input:focus, .textarea:focus, .select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(111, 174, 142, 0.15);
+}
+.input::placeholder, .textarea::placeholder { color: var(--text-muted); }
+.textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+/* ---------- 卡片 ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.card-hover:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+
+/* ---------- 弹窗 ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(55, 66, 60, 0.38);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+.modal-overlay.show { opacity: 1; }
+.modal {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop);
+  width: 100%;
+  max-width: 440px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(14px) scale(0.97);
+  opacity: 0;
+  transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+.modal-overlay.show .modal { transform: none; opacity: 1; }
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 0;
+}
+.modal-title { font-size: 17px; font-weight: 700; }
+.modal-close {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.modal-close:hover { background: var(--bg); color: var(--text); }
+.modal-body { padding: 16px 22px; overflow-y: auto; }
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 4px 22px 18px;
+}
+
+/* ---------- Toast ---------- */
+#toast-root {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2000;
+  pointer-events: none;
+}
+.toast {
+  background: var(--text);
+  color: #f4f6f2;
+  font-size: 13.5px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-pop);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+}
+.toast.show { opacity: 1; transform: none; }
+.toast.hide { opacity: 0; transform: translateY(6px); }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 640px) {
+  .brand-bar { justify-content: center; text-align: center; }
+  .nav { width: 100%; justify-content: center; }
+  .nav-item { flex: 1; padding: 8px 10px; }
+  .app-shell { padding: 0 14px 36px; }
+}

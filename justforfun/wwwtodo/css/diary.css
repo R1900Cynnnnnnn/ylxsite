@@ -1,0 +1,342 @@
+/* ============================================================
+   WWWtodo — diary.css 日记模块样式（类名前缀 .di-）
+   风格：纸张 / 手账感的编辑区 + 紧凑清晰的月历，
+   延续 base.css 的清新淡雅配色与变量。
+   ============================================================ */
+
+/* ---------- 整体布局 ---------- */
+.di-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.di-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------- 月历 ---------- */
+.di-cal { padding: 16px; }
+
+.di-cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.di-cal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+
+.di-cal-nav {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-muted);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.di-cal-nav:hover { background: var(--primary-soft); color: var(--primary-dark); }
+
+.di-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.di-cal-wd {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 0;
+  letter-spacing: 1px;
+}
+
+.di-cal-cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  font-size: 13px;
+  color: var(--text);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.di-cal-cell.empty { pointer-events: none; }
+.di-cal-cell:not(.empty):not(.future):hover { background: var(--primary-soft); }
+
+/* 未来日期：置灰不可点 */
+.di-cal-cell.future {
+  color: var(--text-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 有日记：柔和底色 + 小圆点 */
+.di-cal-cell.has-diary { background: var(--accent-soft); }
+.di-cal-cell .di-dot {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* 今天高亮 */
+.di-cal-cell.today {
+  font-weight: 700;
+  color: var(--primary-dark);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+
+/* 选中日期 */
+.di-cal-cell.selected {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+.di-cal-cell.selected .di-dot { background: #fff; }
+.di-cal-cell.selected.has-diary { background: var(--primary); }
+
+/* streak 徽章 */
+.di-streak {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.di-streak b { color: var(--primary-dark); font-size: 14px; }
+
+.di-today-btn {
+  font-size: 12px;
+  color: var(--primary-dark);
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  white-space: nowrap;
+}
+.di-today-btn:hover { background: var(--primary-soft); border-color: var(--primary); }
+
+/* ---------- 最近日记概览 ---------- */
+.di-recent { padding: 16px; }
+
+.di-recent-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+}
+
+.di-recent-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 6px 2px;
+}
+
+.di-recent-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  transition: background var(--dur) var(--ease);
+}
+.di-recent-item:hover { background: var(--primary-soft); }
+.di-recent-item.active { background: var(--primary-soft); }
+
+.di-recent-date {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.di-recent-mood { flex-shrink: 0; font-size: 14px; }
+
+.di-recent-summary {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  min-width: 0; /* 让 flex 项可收缩，省略号才能生效 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.di-recent-summary i { font-style: normal; opacity: 0.7; }
+
+/* ---------- 编辑区（纸张 / 手账感） ---------- */
+.di-editor {
+  padding: 26px 30px;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box;
+}
+
+.di-editor-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.di-editor-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  font-family: Georgia, "Times New Roman", "Songti SC", "SimSun", var(--font);
+}
+
+.di-editor-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.di-editor-actions {
+  display: flex;
+  gap: 8px;
+}
+.di-editor-actions .btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---------- 心情选择器 ---------- */
+.di-mood-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.di-mood-label {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-right: 6px;
+}
+
+.di-mood {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  filter: grayscale(0.55);
+  opacity: 0.7;
+  transition: transform var(--dur) var(--ease), filter var(--dur) var(--ease),
+    opacity var(--dur) var(--ease), background var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.di-mood:hover {
+  filter: none;
+  opacity: 1;
+  background: var(--primary-soft);
+  transform: translateY(-2px);
+}
+.di-mood.selected {
+  filter: none;
+  opacity: 1;
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 2px var(--primary);
+  transform: scale(1.08);
+}
+
+/* ---------- 纸张编辑区 ---------- */
+/* 横线偏移做进渐变：首条线在首行文字基线下方，padding-top 归零避免错位。
+   按 15px 字号 / 32px 行高校准：首行线盒 [0,32]，基线约 24px，横线落在 27-28px。 */
+.di-paper {
+  margin-top: 16px;
+  border-radius: var(--radius-sm);
+  background-color: #fdfdfb;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 27px,
+    #eef0ea 27px,
+    #eef0ea 28px
+  );
+  border: 1px solid var(--border);
+  padding: 0 14px 4px;
+}
+
+.di-textarea {
+  width: 100%;
+  min-height: 320px;
+  border: none;
+  outline: none;
+  background: transparent;
+  resize: vertical;
+  font-size: 15px;
+  line-height: 32px; /* 对齐横线 */
+  padding: 0;
+  color: var(--text);
+  font-family: Georgia, "Times New Roman", "Songti SC", "SimSun", var(--font);
+}
+.di-textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.75;
+  font-style: italic;
+}
+.di-textarea:focus { box-shadow: none; }
+
+/* ---------- 空状态引导 ---------- */
+.di-empty-hint {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 800px) {
+  .di-layout { grid-template-columns: 1fr; }
+  .di-editor { padding: 20px; }
+}
+
+@media (max-width: 640px) {
+  /* 字号 ≥16px，避免 iOS 聚焦输入框时自动缩放页面。
+     16px 字号在 32px 行高内基线比 15px 低约 1px，
+     横线渐变同步下移 1px，保持文字贴近横线。 */
+  .di-textarea { font-size: 16px; line-height: 32px; }
+  .di-paper {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 28px,
+      #eef0ea 28px,
+      #eef0ea 29px
+    );
+  }
+}
