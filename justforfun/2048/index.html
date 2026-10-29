@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>2048 · 清新方块</title>
+  <meta name="description" content="基于 Three.js 的清新风格 3D 2048 小游戏">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="title-block">
+        <h1 class="game-title">2048</h1>
+        <p class="game-subtitle">滑动方块，合成 2048！</p>
+      </div>
+      <div class="score-panel">
+        <div class="score-card">
+          <span class="score-label">分数</span>
+          <span id="score" class="score-value">0</span>
+        </div>
+        <div class="score-card best">
+          <span class="score-label">最高分</span>
+          <span id="best-score" class="score-value">0</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <button id="new-game-btn" class="btn-new-game" type="button">新游戏</button>
+    </div>
+
+    <div class="game-layout">
+      <main class="board-wrap">
+        <div id="board-container" class="board-container"></div>
+
+        <!-- 胜利遮罩 -->
+        <div id="win-overlay" class="overlay hidden">
+          <div class="overlay-card">
+            <div class="overlay-emoji">🎉</div>
+            <h2 class="overlay-title">太棒了！</h2>
+            <p class="overlay-text">你成功合成了 2048！</p>
+            <div class="overlay-actions">
+              <button id="continue-btn" class="btn-overlay primary" type="button">继续挑战</button>
+              <button id="win-new-game-btn" class="btn-overlay" type="button">重新开始</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 失败遮罩 -->
+        <div id="lose-overlay" class="overlay hidden">
+          <div class="overlay-card">
+            <div class="overlay-emoji">🌧️</div>
+            <h2 class="overlay-title">游戏结束</h2>
+            <p class="overlay-text">棋盘已满，再来一局吧！</p>
+            <div class="overlay-actions">
+              <button id="lose-new-game-btn" class="btn-overlay primary" type="button">再来一局</button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 排行榜 -->
+      <section class="leaderboard" aria-label="排行榜">
+        <h2 class="leaderboard-title">排行榜</h2>
+        <ol id="leaderboard-list" class="leaderboard-list" aria-live="polite"></ol>
+        <p id="leaderboard-empty" class="leaderboard-empty hidden">还没有记录，快来上榜吧</p>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <p class="hint">操作方式：方向键 / WASD / 触摸滑动</p>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="game.js"></script>
+  <script src="scene.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

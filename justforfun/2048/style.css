@@ -1,0 +1,447 @@
+/* ========== 清新 pastel 风 2048 ========== */
+
+:root {
+  --mint: #b8e8d0;
+  --mint-deep: #7ed6b5;
+  --sky: #a8d8f0;
+  --sky-deep: #7cc4e8;
+  --coral: #ffb3a7;
+  --coral-deep: #ff8f7d;
+  --ink: #4a5a68;
+  --ink-soft: #6d8494;
+  --card: rgba(214, 243, 234, 0.62);
+  --shadow: 0 10px 30px rgba(126, 182, 214, 0.25);
+  --radius: 18px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: linear-gradient(160deg, #cfece0 0%, #c6e6ea 50%, #c3dff2 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+/* 背景装饰气泡 */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  width: 340px;
+  height: 340px;
+  background: var(--mint);
+  top: -80px;
+  left: -100px;
+}
+
+body::after {
+  width: 300px;
+  height: 300px;
+  background: var(--sky);
+  bottom: -60px;
+  right: -80px;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 760px;
+  padding: 14px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- 头部 ---------- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.game-title {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: linear-gradient(120deg, var(--mint-deep), var(--sky-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.1;
+}
+
+.game-subtitle {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+.score-panel {
+  display: flex;
+  gap: 10px;
+}
+
+.score-card {
+  background: var(--card);
+  backdrop-filter: blur(6px);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 6px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 86px;
+}
+
+.score-card.best {
+  background: linear-gradient(135deg, rgba(184, 232, 208, 0.7) 0%, rgba(168, 216, 240, 0.7) 100%);
+}
+
+.score-label {
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 1px;
+}
+
+.score-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.score-value.bump {
+  animation: scoreBump 0.25s ease;
+}
+
+@keyframes scoreBump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); color: var(--coral-deep); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- 工具栏 ---------- */
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-new-game {
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  padding: 8px 22px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, var(--mint-deep), var(--sky-deep));
+  box-shadow: 0 6px 16px rgba(124, 196, 232, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-new-game:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(124, 196, 232, 0.5);
+}
+
+.btn-new-game:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* ---------- 棋盘与排行榜布局 ---------- */
+.game-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- 棋盘 ---------- */
+.board-wrap {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.board-container {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: transparent; /* 透明背景，让 canvas 棋盘浮起来 */
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  touch-action: none; /* 让触摸滑动事件稳定触发 */
+  overflow: hidden;
+}
+
+.board-container canvas {
+  display: block;
+}
+
+/* ---------- 遮罩层 ---------- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(190, 225, 210, 0.55);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  animation: fadeIn 0.35s ease;
+  border-radius: 24px;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.overlay-card {
+  background: rgba(44, 74, 82, 0.82);
+  backdrop-filter: blur(10px);
+  color: #eef8f4;
+  border-radius: 24px;
+  box-shadow: 0 16px 40px rgba(58, 98, 110, 0.35);
+  padding: 32px 36px;
+  text-align: center;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 82%;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.overlay-emoji {
+  font-size: 44px;
+  margin-bottom: 8px;
+}
+
+.overlay-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.overlay-text {
+  font-size: 14px;
+  color: rgba(238, 248, 244, 0.78);
+  margin-bottom: 20px;
+}
+
+.overlay-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-overlay {
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: rgba(238, 248, 244, 0.16);
+  color: #eef8f4;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.btn-overlay.primary {
+  background: linear-gradient(120deg, var(--coral), var(--coral-deep));
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(255, 143, 125, 0.4);
+}
+
+.btn-overlay:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+}
+
+.btn-overlay:active {
+  transform: scale(0.96);
+}
+
+/* ---------- 排行榜 ---------- */
+.leaderboard {
+  background: var(--card);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+}
+
+.leaderboard-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  background: linear-gradient(120deg, var(--mint-deep), var(--sky-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.leaderboard-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  background: rgba(222, 245, 238, 0.35);
+  font-size: 14px;
+}
+
+.leaderboard-item.latest {
+  background: rgba(126, 214, 181, 0.35);
+  box-shadow: 0 0 0 1.5px var(--mint-deep);
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 进行中的本局条目：薄荷绿描边 + 「进行中」徽标 */
+.leaderboard-item.live {
+  background: rgba(126, 214, 181, 0.22);
+  box-shadow: 0 0 0 1.5px var(--mint-deep);
+}
+
+.live-badge {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+  background: linear-gradient(120deg, var(--mint-deep), var(--sky-deep));
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.rank {
+  flex: 0 0 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.leaderboard-item:nth-child(1) .rank { color: #d9a520; }
+.leaderboard-item:nth-child(2) .rank { color: #9aa8b2; }
+.leaderboard-item:nth-child(3) .rank { color: #c07f50; }
+
+.leaderboard-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.leaderboard-score {
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-empty {
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: center;
+  padding: 12px 0;
+}
+
+.leaderboard-empty.hidden {
+  display: none;
+}
+
+/* ---------- 底部提示 ---------- */
+.footer {
+  text-align: center;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 1px;
+}
+
+/* ---------- 响应式 ---------- */
+@media (min-width: 820px) {
+  .page {
+    max-width: 1040px;
+  }
+
+  .game-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .board-wrap {
+    flex: 1 1 auto;
+  }
+
+  .leaderboard {
+    flex: 0 0 240px;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .page {
+    padding: 12px 12px 18px;
+  }
+
+  .game-title {
+    font-size: 30px;
+  }
+
+  .score-card {
+    min-width: 72px;
+    padding: 6px 14px;
+  }
+
+  .score-value {
+    font-size: 20px;
+  }
+
+  .overlay-card {
+    padding: 24px 20px;
+  }
+}
